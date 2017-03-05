@@ -48,7 +48,7 @@ namespace Polfarer.Controllers
                                 $"vmpSite/store-pickup/{interestingStout.Varenummer}/pointOfServices?cartPage=false&entryNumber=0")
                                 .Result;
                         var stockStatus = JsonConvert.DeserializeObject<StockStatus>(stockJson);
-                        db.WatchedBeers.Add(new WatchedBeer
+                        var watchedBeer = new WatchedBeer
                         {
                             Name = interestingStout.Varenavn,
                             AlcoholPercentage = decimal.Parse(interestingStout.Alkohol, CultureInfo.InvariantCulture) / 100,
@@ -61,7 +61,11 @@ namespace Polfarer.Controllers
                                     Distance = decimal.Parse(x.formattedDistance.Split(' ').First(), CultureInfo.InvariantCulture),
                                     StockLevel = int.Parse(x.stockLevel)
                                 }).ToList()
-                        });
+                        };
+                        if (watchedBeer.BeerLocations.Any(x => x.Distance < 10 && x.StockLevel > 0))
+                        {
+                            db.WatchedBeers.Add(watchedBeer);
+                        }
                     }
                     catch (Exception e)
                     {
