@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -64,13 +65,19 @@ namespace Polfarer.Controllers
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Trace.TraceError($"Couldn't fetch beer info from vinmonopolet.no. {Environment.NewLine}{e}");
                     }
                 }
-
-                await db.Database.ExecuteSqlCommandAsync("DELETE FROM [BeerLocations]");
-                await db.Database.ExecuteSqlCommandAsync("DELETE FROM [WatchedBeers]");
-                await db.SaveChangesAsync();
+                try
+                {
+                    await db.Database.ExecuteSqlCommandAsync("DELETE FROM [BeerLocations]");
+                    await db.Database.ExecuteSqlCommandAsync("DELETE FROM [WatchedBeers]");
+                    await db.SaveChangesAsync();
+                }
+                catch (Exception e)
+                {
+                    Trace.TraceError($"Couldn't save beer info. {Environment.NewLine}{e}");
+                }
             }
 
             return "All good.";
@@ -78,16 +85,24 @@ namespace Polfarer.Controllers
 
         private static async Task<List<PolProduct>> PolProducts(HttpClient client)
         {
-            var productsString =
-                await
-                    client.GetAsync(
-                        "medias/sys_master/products/products/hbc/hb0/8834253127710/produkter.csv");
-            var csv =
-                new CsvReader(new StringReader(Encoding.Default.GetString(await productsString.Content.ReadAsByteArrayAsync())));
-            csv.Configuration.Delimiter = ";";
-            csv.Configuration.Encoding = Encoding.Default;
-            var records = csv.GetRecords<PolProduct>().ToList();
-            return records;
+            try
+            {
+                var productsString =
+                    await
+                        client.GetAsync(
+                            "medias/sys_master/products/products/hbc/hb0/8834253127710/produkter.csv");
+                var csv =
+                    new CsvReader(new StringReader(Encoding.Default.GetString(await productsString.Content.ReadAsByteArrayAsync())));
+                csv.Configuration.Delimiter = ";";
+                csv.Configuration.Encoding = Encoding.Default;
+                var records = csv.GetRecords<PolProduct>().ToList();
+                return records;
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError($"Couldn't fetch CSV from vinmonopolet.no. {Environment.NewLine}{e}");
+                throw;
+            }
         }
     }
 }
