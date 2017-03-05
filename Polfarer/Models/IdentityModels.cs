@@ -25,6 +25,10 @@ namespace Polfarer.Models
         {
         }
 
+        public DbSet<WatchedBeer> WatchedBeers { get; set; }
+
+        public DbSet<BeerLocation> BeerLocations { get; set; }
+
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();

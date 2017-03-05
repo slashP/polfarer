@@ -1,0 +1,20 @@
+﻿@model IEnumerable<Polfarer.Models.WatchedBeer>
+
+<h2>Stouts</h2>
+<table class="table table-condensed">
+    <tr>
+        <th>Navn</th>
+        <th>Pris</th>
+        <th>Alc</th>
+        <th>Loc</th>
+    </tr>
+    @foreach (var beer in Model.OrderByDescending(x => x.AlcoholPercentage))
+    {
+        <tr>
+            <td>@beer.Name</td>
+            <td>@beer.Price</td>
+            <td>@(beer.AlcoholPercentage) %</td>
+            <td>@string.Join(" - ", beer.BeerLocations.Take(3).Select(x => $"{x.StockLevel} @ {x.Name}"))</td>
+        </tr>
+    }
+</table>
