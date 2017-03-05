@@ -95,6 +95,7 @@ namespace Polfarer.Controllers
                     new CsvReader(new StringReader(Encoding.Default.GetString(await productsString.Content.ReadAsByteArrayAsync())));
                 csv.Configuration.Delimiter = ";";
                 csv.Configuration.Encoding = Encoding.Default;
+                csv.Configuration.CultureInfo = new CultureInfo("nb-NO");
                 var records = csv.GetRecords<PolProduct>().ToList();
                 return records;
             }
