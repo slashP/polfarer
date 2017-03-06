@@ -18,12 +18,21 @@ namespace Polfarer.Controllers
 {
     public class AdminController : Controller
     {
-        private const int MinimumAlcohol = 900;
-
         [Route("admin/fetch")]
         [HttpPost]
-        public async Task<string> Beers()
+        public async Task<string> Beers(string searchTerm, decimal alcoholLevel)
         {
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                return $"Provide a {nameof(searchTerm)}";
+            }
+
+            if (alcoholLevel < 2)
+            {
+                return $"{nameof(alcoholLevel)} missing or too low.";
+            }
+
+            var minimumAlcohol = alcoholLevel < 100 ? alcoholLevel * 100m : alcoholLevel;
             var cookies = new CookieContainer();
             var handler = new HttpClientHandler { CookieContainer = cookies };
 
@@ -32,37 +41,37 @@ namespace Polfarer.Controllers
             var client = new HttpClient(handler) { BaseAddress = baseAddress };
             var records = await PolProducts(client);
             decimal alc;
-            var interestingStouts =
+            var interestingBeers =
                 records.Where(
                     x =>
                         decimal.TryParse(x.Alkohol, NumberStyles.Any, CultureInfo.InvariantCulture, out alc) &&
-                        alc >= MinimumAlcohol && x.Varetype.ToLower().Contains("stout")).ToList();
+                        alc >= minimumAlcohol && x.Varetype.ToLower().Contains(searchTerm)).ToList();
             using (var db = new ApplicationDbContext())
             {
-                foreach (var interestingStout in interestingStouts)
+                foreach (var interestingBeer in interestingBeers)
                 {
                     try
                     {
                         var stockJson =
                             client.GetStringAsync(
-                                $"vmpSite/store-pickup/{interestingStout.Varenummer}/pointOfServices?cartPage=false&entryNumber=0")
+                                $"vmpSite/store-pickup/{interestingBeer.Varenummer}/pointOfServices?cartPage=false&entryNumber=0")
                                 .Result;
                         var stockStatus = JsonConvert.DeserializeObject<StockStatus>(stockJson);
                         var watchedBeer = new WatchedBeer
                         {
-                            Name = interestingStout.Varenavn,
-                            AlcoholPercentage = decimal.Parse(interestingStout.Alkohol, CultureInfo.InvariantCulture) / 100,
-                            Price = interestingStout.Pris,
-                            Type = interestingStout.Varetype,
+                            Name = interestingBeer.Varenavn,
+                            AlcoholPercentage = decimal.Parse(interestingBeer.Alkohol, CultureInfo.InvariantCulture) / 100,
+                            Price = interestingBeer.Pris,
+                            Type = interestingBeer.Varetype,
                             BeerLocations =
-                                stockStatus.data.Where(x => int.Parse(x.stockLevel) > 0).Take(4).Select(x => new BeerLocation
+                                stockStatus.data.Where(x => int.Parse(x.stockLevel) > 0).Select(x => new BeerLocation
                                 {
                                     Name = x.displayName,
                                     Distance = decimal.Parse(x.formattedDistance.Split(' ').First(), CultureInfo.InvariantCulture),
                                     StockLevel = int.Parse(x.stockLevel)
-                                }).ToList()
+                                }).Where(x => x.Distance < 7 && x.StockLevel > 0).ToList()
                         };
-                        if (watchedBeer.BeerLocations.Any(x => x.Distance < 10 && x.StockLevel > 0))
+                        if (watchedBeer.BeerLocations.Any())
                         {
                             db.WatchedBeers.Add(watchedBeer);
                         }
@@ -74,13 +83,15 @@ namespace Polfarer.Controllers
                 }
                 try
                 {
-                    await db.Database.ExecuteSqlCommandAsync("DELETE FROM [BeerLocations]");
-                    await db.Database.ExecuteSqlCommandAsync("DELETE FROM [WatchedBeers]");
+                    await db.Database.ExecuteSqlCommandAsync(
+                        $"DELETE FROM [BeerLocations] WHERE [{nameof(BeerLocation.WatchedBeerId)}] IN (SELECT [Id] FROM [WatchedBeers] WHERE [Type] LIKE '%' + @p0 + '%')", searchTerm);
+                    await db.Database.ExecuteSqlCommandAsync($"DELETE FROM [WatchedBeers] WHERE [{nameof(WatchedBeer.Type)}] LIKE '%' + @p0 + '%'", searchTerm);
                     await db.SaveChangesAsync();
                 }
                 catch (Exception e)
                 {
                     Trace.TraceError($"Couldn't save beer info. {Environment.NewLine}{e}");
+                    return "Failed saving to db. " + e;
                 }
             }
 

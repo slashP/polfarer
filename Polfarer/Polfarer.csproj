@@ -177,6 +177,7 @@
     <Compile Include="Controllers\BeerController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\PolViewModel.cs" />
     <Compile Include="Dto\PolProduct.cs" />
     <Compile Include="Dto\StockStatus.cs" />
     <Compile Include="Global.asax.cs">
@@ -233,7 +234,6 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\ConfirmEmail.cshtml" />
     <Content Include="Views\Account\ExternalLoginConfirmation.cshtml" />
@@ -255,6 +255,7 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Beer\Beers.cshtml" />
+    <Content Include="Views\Beer\Pol.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

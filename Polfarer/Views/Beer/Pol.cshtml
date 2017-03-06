@@ -1,0 +1,29 @@
+﻿@model Polfarer.Controllers.PolViewModel
+
+<h4>@Model.SearchTerm</h4>
+
+@foreach (var type in Model.Types)
+{
+    <a href="/?query=@(HttpUtility.UrlEncode(type))">@type</a>
+}
+
+@foreach (var pol in Model.GroupedBeers)
+{
+    <table class="table table-condensed">
+        <tr>
+            <th>@pol.Key</th>
+            <th>Pris</th>
+            <th>Alc</th>
+            <th>Antall</th>
+        </tr>
+        @foreach (var location in pol.OrderByDescending(x => x.WatchedBeer.AlcoholPercentage))
+        {
+            <tr>
+                <td>@location.WatchedBeer.Name</td>
+                <td>@location.WatchedBeer.Price</td>
+                <td>@(location.WatchedBeer.AlcoholPercentage) %</td>
+                <td>@location.StockLevel</td>
+            </tr>
+        }
+    </table>
+}
