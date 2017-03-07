@@ -264,6 +264,7 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Beer\Beers.cshtml" />
     <Content Include="Views\Beer\Pol.cshtml" />
+    <Content Include="Views\Beer\AllBeers.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

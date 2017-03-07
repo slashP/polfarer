@@ -1,0 +1,21 @@
+﻿@model List<Polfarer.Models.Beer>
+    
+<table class="table table-condensed">
+    <tr>
+        <th>Name</th>
+        <th>Brewery</th>
+        <th>Alc</th>
+        <th>Type</th>
+        <th>Price</th>
+    </tr>
+    @foreach (var beer in Model)
+    {
+        <tr>
+            <td>@beer.Name</td>
+            <td>@beer.Brewery</td>
+            <td>@beer.Alcohol %</td>
+            <td>@beer.BeerCategory.ToString()</td>
+            <td class="text-right">@beer.Price</td>
+        </tr>
+    }
+</table>

@@ -21,6 +21,16 @@ namespace Polfarer.Controllers
             }
         }
 
+        [Route("allBeers")]
+        public async Task<ActionResult> AllBeers()
+        {
+            using (var db = new ApplicationDbContext())
+            {
+                var beers = await db.Beers.OrderByDescending(x => x.Alcohol).ToListAsync();
+                return View(beers);
+            }
+        }
+
         [Route("")]
         public async Task<ActionResult> Pol(string query = "Stout")
         {
