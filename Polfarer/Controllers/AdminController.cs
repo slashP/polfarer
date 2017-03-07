@@ -13,11 +13,33 @@ using CsvHelper;
 using Newtonsoft.Json;
 using Polfarer.Dto;
 using Polfarer.Models;
+using Polfarer.Services;
 
 namespace Polfarer.Controllers
 {
     public class AdminController : Controller
     {
+        private readonly IBeerService _beerService;
+        private static readonly Uri BaseAddress = new Uri("https://www.vinmonopolet.no");
+
+        public AdminController()
+        {
+            _beerService = new BeerService();
+        }
+
+        [Route("admin/allBeersFromCsv")]
+        [HttpPost]
+        public async Task<string> Update()
+        {
+            var httpClient = new HttpClient
+            {
+                BaseAddress = BaseAddress
+            };
+            var polProducts = await PolProducts(httpClient);
+            var numberOfInserts = await _beerService.SaveBeers(polProducts);
+            return $"Inserted {numberOfInserts} beers.";
+        }
+
         [Route("admin/fetch")]
         [HttpPost]
         public async Task<string> Beers(string searchTerm, decimal alcoholLevel)
@@ -36,16 +58,15 @@ namespace Polfarer.Controllers
             var cookies = new CookieContainer();
             var handler = new HttpClientHandler { CookieContainer = cookies };
 
-            var baseAddress = new Uri("https://www.vinmonopolet.no");
-            cookies.Add(baseAddress, new Cookie("vmpSite-customerLocation", @""" | 59.913438, 10.742932"""));
-            var client = new HttpClient(handler) { BaseAddress = baseAddress };
+            cookies.Add(BaseAddress, new Cookie("vmpSite-customerLocation", @""" | 59.913438, 10.742932"""));
+            var client = new HttpClient(handler) { BaseAddress = BaseAddress };
             var records = await PolProducts(client);
             decimal alc;
             var interestingBeers =
                 records.Where(
                     x =>
                         decimal.TryParse(x.Alkohol, NumberStyles.Any, CultureInfo.InvariantCulture, out alc) &&
-                        alc >= minimumAlcohol && x.Varetype.ToLower().Contains(searchTerm)).ToList();
+                        alc >= minimumAlcohol && x.Varetype.ToLower().Contains(searchTerm.ToLower())).ToList();
             using (var db = new ApplicationDbContext())
             {
                 foreach (var interestingBeer in interestingBeers)
@@ -53,9 +74,8 @@ namespace Polfarer.Controllers
                     try
                     {
                         var stockJson =
-                            client.GetStringAsync(
-                                $"vmpSite/store-pickup/{interestingBeer.Varenummer}/pointOfServices?cartPage=false&entryNumber=0")
-                                .Result;
+                            await client.GetStringAsync(
+                                $"vmpSite/store-pickup/{interestingBeer.Varenummer}/pointOfServices?cartPage=false&entryNumber=0");
                         var stockStatus = JsonConvert.DeserializeObject<StockStatus>(stockJson);
                         var watchedBeer = new WatchedBeer
                         {
@@ -64,7 +84,7 @@ namespace Polfarer.Controllers
                             Price = interestingBeer.Pris,
                             Type = interestingBeer.Varetype,
                             BeerLocations =
-                                stockStatus.data.Where(x => int.Parse(x.stockLevel) > 0).Select(x => new BeerLocation
+                                stockStatus.data.Select(x => new BeerLocation
                                 {
                                     Name = x.displayName,
                                     Distance = decimal.Parse(x.formattedDistance.Split(' ').First(), CultureInfo.InvariantCulture),

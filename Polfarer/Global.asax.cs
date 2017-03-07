@@ -1,6 +1,9 @@
-﻿using System.Web.Mvc;
+﻿using System.Data.Entity;
+using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using Polfarer.Migrations;
+using Polfarer.Models;
 
 namespace Polfarer
 {
@@ -12,6 +15,7 @@ namespace Polfarer
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<ApplicationDbContext, Configuration>());
         }
     }
 }

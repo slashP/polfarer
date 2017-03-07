@@ -191,13 +191,21 @@
     <Compile Include="Migrations\201703051604357_WatchedBeers.Designer.cs">
       <DependentUpon>201703051604357_WatchedBeers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201703071734247_AllBeersTable.cs" />
+    <Compile Include="Migrations\201703071734247_AllBeersTable.Designer.cs">
+      <DependentUpon>201703071734247_AllBeersTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\Beer.cs" />
+    <Compile Include="Models\BeerCategory.cs" />
     <Compile Include="Models\BeerLocation.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\WatchedBeer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\BeerService.cs" />
+    <Compile Include="Services\IBeerService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +282,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201703051604357_WatchedBeers.resx">
       <DependentUpon>201703051604357_WatchedBeers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703071734247_AllBeersTable.resx">
+      <DependentUpon>201703071734247_AllBeersTable.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
