@@ -11,7 +11,7 @@
     @foreach (var beer in Model)
     {
         <tr>
-            <td>@beer.Name</td>
+            <td><a href="https://untappd.com/search?q=@beer.Name">@beer.Name</a></td>
             <td>@beer.Brewery</td>
             <td>@beer.Alcohol %</td>
             <td>@beer.BeerCategory.ToString()</td>

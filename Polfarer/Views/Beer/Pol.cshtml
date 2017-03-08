@@ -19,7 +19,7 @@
         @foreach (var location in pol.OrderByDescending(x => x.WatchedBeer.AlcoholPercentage))
         {
             <tr>
-                <td>@location.WatchedBeer.Name</td>
+                <td><a href="https://untappd.com/search?q=@location.WatchedBeer.Name">@location.WatchedBeer.Name</a></td>
                 <td>@location.WatchedBeer.Price</td>
                 <td>@(location.WatchedBeer.AlcoholPercentage) %</td>
                 <td>@location.StockLevel</td>
